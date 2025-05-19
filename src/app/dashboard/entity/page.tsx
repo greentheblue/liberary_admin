@@ -16,7 +16,6 @@ import {
   Building2,
   Search,
   Phone,
-  MapPin,
   User,
   ChevronLeft,
   ChevronRight,

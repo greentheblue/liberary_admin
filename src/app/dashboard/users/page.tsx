@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { UserPlus, Search, Edit, Trash2, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -26,6 +26,19 @@ type User = {
   updatedAt: string;
 };
 
+type ErrorWithMessage = {
+  message: string;
+};
+
+function isErrorWithMessage(error: unknown): error is ErrorWithMessage {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'message' in error &&
+    typeof (error as Record<string, unknown>).message === 'string'
+  );
+}
+
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
@@ -34,7 +47,7 @@ export default function UsersPage() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     setLoading(true);
     try {
       const url = searchQuery 
@@ -49,17 +62,20 @@ export default function UsersPage() {
       
       const data = await response.json();
       setUsers(data.users || []);
-    } catch (error: any) {
-      toast.error(error.message || "An error occurred while fetching users");
+    } catch (error: unknown) {
+      const errorMessage = isErrorWithMessage(error) 
+        ? error.message 
+        : "An error occurred while fetching users";
+      toast.error(errorMessage);
       console.error(error);
     } finally {
       setLoading(false);
     }
-  };
+  }, [searchQuery]);
 
   useEffect(() => {
     fetchUsers();
-  }, [searchQuery]);
+  }, [fetchUsers]);
 
   const handleAddUser = () => {
     setSelectedUser(null);
@@ -73,10 +89,6 @@ export default function UsersPage() {
 
   const handleConfirmDelete = (userId: string) => {
     setConfirmDelete(userId);
-  };
-
-  const handleCancelDelete = () => {
-    setConfirmDelete(null);
   };
 
   const handleDeleteUser = async (userId: string) => {
@@ -93,15 +105,18 @@ export default function UsersPage() {
       toast.success("User deleted successfully");
       setConfirmDelete(null);
       fetchUsers();
-    } catch (error: any) {
-      toast.error(error.message || "An error occurred while deleting user");
+    } catch (error: unknown) {
+      const errorMessage = isErrorWithMessage(error) 
+        ? error.message 
+        : "An error occurred while deleting user";
+      toast.error(errorMessage);
     }
   };
 
   const formatDate = (dateString: string) => {
     try {
       return format(new Date(dateString), "MMM dd, yyyy");
-    } catch (error) {
+    } catch {
       return "Invalid date";
     }
   };

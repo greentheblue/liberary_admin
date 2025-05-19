@@ -83,6 +83,7 @@ export default function AddEntity() {
       toast.success("Entity created successfully!");
       form.reset();
     } catch (error) {
+      console.error("Error creating entity:", error);
       toast.error("Failed to create entity. Please try again.");
     } finally {
       setIsLoading(false);

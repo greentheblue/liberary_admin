@@ -5,7 +5,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import {
-  Building2,
   Phone,
   MapPin,
   User,
@@ -90,6 +89,7 @@ export default function AddStaff() {
       toast.success("Staff member added successfully!");
       form.reset();
     } catch (error) {
+      console.error("Error adding staff member:", error);
       toast.error("Failed to add staff member. Please try again.");
     } finally {
       setIsLoading(false);

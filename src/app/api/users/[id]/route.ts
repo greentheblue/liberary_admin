@@ -2,11 +2,29 @@ import { NextResponse } from "next/server";
 import { entityPrisma } from "@/lib/db";
 import { hash } from "bcryptjs";
 
+interface RouteContext {
+  params: Promise<{ id: string }>;
+}
+
+interface UserUpdateData {
+  name?: string;
+  email?: string;
+  password?: string;
+}
+
+interface UserRequestBody {
+  name?: string;
+  email?: string;
+  password?: string;
+}
+
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  context: RouteContext
 ) {
   try {
+    const params = await context.params;
+
     const userId = params.id;
 
     const user = await entityPrisma.user.findUnique({
@@ -39,11 +57,12 @@ export async function GET(
 
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  context: RouteContext
 ) {
-  try {
+  try {    const params = await context.params;
+
     const userId = params.id;
-    const body = await request.json();
+    const body = await request.json() as UserRequestBody;
 
     // Check if user exists
     const existingUser = await entityPrisma.user.findUnique({
@@ -68,11 +87,10 @@ export async function PUT(
           { error: "Email already in use" },
           { status: 400 }
         );
-      }
-    }
+      }    }
 
     // Prepare update data
-    const updateData: any = {};
+    const updateData: UserUpdateData = {};
     if (body.name) updateData.name = body.name;
     if (body.email) updateData.email = body.email;
     if (body.password) updateData.password = await hash(body.password, 10);
@@ -102,9 +120,11 @@ export async function PUT(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  context: RouteContext
 ) {
   try {
+    const params = await context.params;
+
     const userId = params.id;
 
     // Check if user exists

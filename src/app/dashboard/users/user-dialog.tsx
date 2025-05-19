@@ -88,10 +88,9 @@ export function UserDialog({
         ? `/api/users/${user.id}`
         : "/api/users";
       
-      const method = isEditing ? "PUT" : "POST";
-      
-      // If editing and password is empty, remove it from the payload
+      const method = isEditing ? "PUT" : "POST";      // If editing and password is empty, remove it from the payload
       if (isEditing && !data.password) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { password, ...restData } = data;
         data = restData as UserFormData;
       }
@@ -108,15 +107,16 @@ export function UserDialog({
 
       if (!response.ok) {
         throw new Error(result.error || "Something went wrong");
-      }
-
-      toast.success(
+      }      toast.success(
         isEditing ? "User updated successfully" : "User created successfully"
       );
       onSuccess();
       onClose();
-    } catch (error: any) {
-      toast.error(error.message || "An error occurred");
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : "An error occurred";
+      toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
